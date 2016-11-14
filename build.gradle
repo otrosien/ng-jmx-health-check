@@ -5,7 +5,15 @@ sourceCompatibility = 1.8
 version = '1.0'
 mainClassName = "com.epages.health.JmxHealthCheck"
 
-run {
-	args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi","-O","pdf-rendering:type=Endpoint,name=healthEndpoint","-o","getData"]
+jar {
+    manifest {
+      attributes(
+        'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+        'Main-Class': project.mainClassName
+      )
+    }
 }
 
+run {
+    args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi","-O","pdf-rendering:type=Endpoint,name=healthEndpoint","-o","getData"]
+}
