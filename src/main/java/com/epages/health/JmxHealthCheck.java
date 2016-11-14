@@ -26,9 +26,7 @@ import javax.management.remote.JMXServiceURL;
 public class JmxHealthCheck {
 
     enum Status {
-        OK (0),
-        CRITICAL (2),
-        UNKNOWN (3);
+        OK(0), CRITICAL(2), UNKNOWN(3);
 
         private int exitCode;
 
@@ -73,22 +71,23 @@ public class JmxHealthCheck {
 
     /**
      * Open a connection to a MBean server.
-     * @param serviceUrl Service URL,
-     *     e.g. service:jmx:rmi://HOST:PORT/jndi/rmi://HOST:PORT/jmxrmi
-     * @param username Username
-     * @param password Password
+     * 
+     * @param serviceUrl
+     *            Service URL, e.g.
+     *            service:jmx:rmi://HOST:PORT/jndi/rmi://HOST:PORT/jmxrmi
+     * @param username
+     *            Username
+     * @param password
+     *            Password
      * @return MBeanServerConnection if succesfull.
-     * @throws IOException XX
+     * @throws IOException
+     *             XX
      */
-    public JMXConnector openConnection(
-            JMXServiceURL serviceUrl, String username, String password)
-    throws IOException
-    {
+    public JMXConnector openConnection(JMXServiceURL serviceUrl, String username, String password) throws IOException {
         HashMap<String, Object> environment = new HashMap<>();
         // Add environment variable to check for dead connections.
         if (username != null && password != null) {
-            environment.put(JMXConnector.CREDENTIALS,
-                    new String[] {username, password});
+            environment.put(JMXConnector.CREDENTIALS, new String[] { username, password });
         } else {
             environment.put("jmx.remote.x.client.connection.check.period", 5000);
         }
@@ -97,18 +96,22 @@ public class JmxHealthCheck {
 
     /**
      * Get object name object.
-     * @param connection MBean server connection.
-     * @param objectName Object name string.
+     * 
+     * @param connection
+     *            MBean server connection.
+     * @param objectName
+     *            Object name string.
      * @return Object name object.
-     * @throws InstanceNotFoundException If object not found.
-     * @throws MalformedObjectNameException If object name is malformed.
-     * @throws NagiosJmxPluginException If object name is not unqiue.
-     * @throws IOException In case of a communication error.
+     * @throws InstanceNotFoundException
+     *             If object not found.
+     * @throws MalformedObjectNameException
+     *             If object name is malformed.
+     * @throws NagiosJmxPluginException
+     *             If object name is not unqiue.
+     * @throws IOException
+     *             In case of a communication error.
      */
-    public ObjectName getObjectName(MBeanServerConnection connection,
-            String objectName)
-    throws Exception
-    {
+    public ObjectName getObjectName(MBeanServerConnection connection, String objectName) throws Exception {
         ObjectName objName = new ObjectName(objectName);
         if (objName.isPropertyPattern() || objName.isDomainPattern()) {
             Set<ObjectInstance> mBeans = connection.queryMBeans(objName, null);
@@ -117,8 +120,7 @@ public class JmxHealthCheck {
                 throw new InstanceNotFoundException();
             } else if (mBeans.size() > 1) {
                 throw new IllegalArgumentException(
-                        "Object name not unique: objectName pattern matches " +
-                        mBeans.size() + " MBeans.");
+                        "Object name not unique: objectName pattern matches " + mBeans.size() + " MBeans.");
             } else {
                 objName = mBeans.iterator().next().getObjectName();
             }
@@ -128,30 +130,40 @@ public class JmxHealthCheck {
 
     /**
      * Invoke an operation on MBean.
-     * @param connection MBean server connection.
-     * @param objectName Object name.
-     * @param operationName Operation name.
-     * @throws InstanceNotFoundException XX
-     * @throws IOException XX
-     * @throws MalformedObjectNameException XX
-     * @throws MBeanException XX
-     * @throws ReflectionException XX
-     * @throws NagiosJmxPluginException XX
+     * 
+     * @param connection
+     *            MBean server connection.
+     * @param objectName
+     *            Object name.
+     * @param operationName
+     *            Operation name.
+     * @throws InstanceNotFoundException
+     *             XX
+     * @throws IOException
+     *             XX
+     * @throws MalformedObjectNameException
+     *             XX
+     * @throws MBeanException
+     *             XX
+     * @throws ReflectionException
+     *             XX
+     * @throws NagiosJmxPluginException
+     *             XX
      */
-    public Object invoke(MBeanServerConnection connection, String objectName,
-            String operationName)
-    throws Exception
-    {
+    public Object invoke(MBeanServerConnection connection, String objectName, String operationName) throws Exception {
         ObjectName objName = getObjectName(connection, objectName);
         return connection.invoke(objName, operationName, null, null);
     }
 
     /**
      * Get system properties and execute query.
-     * @param args Arguments as properties.
+     * 
+     * @param args
+     *            Arguments as properties.
      * @return Nagios exit code.
-     * @throws JsonProcessingException 
-     * @throws NagiosJmxPluginException XX
+     * @throws JsonProcessingException
+     * @throws NagiosJmxPluginException
+     *             XX
      */
     public int execute(Properties args) throws Exception {
         String username = args.getProperty(PROP_USERNAME);
@@ -168,21 +180,20 @@ public class JmxHealthCheck {
             return Status.OK.getExitCode();
         }
 
-        if (objectName == null || operation == null || serviceUrl == null)
-        {
+        if (objectName == null || operation == null || serviceUrl == null) {
             showUsage();
             return Status.UNKNOWN.getExitCode();
         }
 
         JMXServiceURL url = new JMXServiceURL(serviceUrl);
-        try(JMXConnector connector = openConnection(url, username, password)) {
+        try (JMXConnector connector = openConnection(url, username, password)) {
             MBeanServerConnection connection = connector.getMBeanServerConnection();
             Object value = invoke(connection, objectName, operation);
             if (value != null) {
                 Status status = Status.OK;
 
                 if (value instanceof Map) {
-                    Map<?,?> mapValue = (Map<?,?>)value;
+                    Map<?, ?> mapValue = (Map<?, ?>) value;
                     if (mapValue.containsKey("status")) {
                         status = "UP".equals(mapValue.get("status")) ? Status.OK : Status.CRITICAL;
                     }
@@ -206,7 +217,9 @@ public class JmxHealthCheck {
 
     /**
      * Main method.
-     * @param args Command line arguments.
+     * 
+     * @param args
+     *            Command line arguments.
      */
     public static void main(String[] args) {
         PrintStream out = System.out;
@@ -225,7 +238,9 @@ public class JmxHealthCheck {
 
     /**
      * Show usage.
-     * @throws NagiosJmxPluginException XX
+     * 
+     * @throws NagiosJmxPluginException
+     *             XX
      */
     private void showUsage() {
         outputResource(getClass().getResource("usage.txt"));
@@ -233,7 +248,9 @@ public class JmxHealthCheck {
 
     /**
      * Show help.
-     * @throws NagiosJmxPluginException XX
+     * 
+     * @throws NagiosJmxPluginException
+     *             XX
      */
     private void showHelp() {
         outputResource(getClass().getResource("help.txt"));
@@ -241,13 +258,15 @@ public class JmxHealthCheck {
 
     /**
      * Output resource.
-     * @param url Resource URL.
-     * @throws NagiosJmxPluginException XX
+     * 
+     * @param url
+     *            Resource URL.
+     * @throws NagiosJmxPluginException
+     *             XX
      */
     private void outputResource(URL url) {
         PrintStream out = System.out;
-        try {
-            Reader r = new InputStreamReader(url.openStream());
+        try (Reader r = new InputStreamReader(url.openStream())) {
             StringBuilder sbHelp = new StringBuilder();
             char[] buffer = new char[1024];
             for (int len = r.read(buffer); len != -1; len = r.read(buffer)) {
@@ -261,7 +280,9 @@ public class JmxHealthCheck {
 
     /**
      * Parse command line arguments.
-     * @param args Command line arguments.
+     * 
+     * @param args
+     *            Command line arguments.
      * @return Command line arguments as properties.
      */
     private static Properties parseArguments(String[] args) {
