@@ -24,51 +24,23 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-/**
- * Nagios JMX plugin.
- *
- * @author Felix Roethenbacher
- *
- */
 public class JmxHealthCheck {
 
-    /**
-     * Nagios status codes and messages.
-     */
     enum Status {
-        /**
-         * Status code NAGIOS OK.
-         */
-        OK (0, "JMX OK - "),
-        /**
-         * Status code NAGIOS CRITICAL.
-         */
-        CRITICAL (2, "JMX CRITICAL - "),
-        /**
-         * Status code NAGIOS UNKNOWN.
-         */
-        UNKNOWN (3, "JMX UNKNOWN - ");
+        OK (0),
+        CRITICAL (2),
+        UNKNOWN (3);
 
         private int exitCode;
-        private String messagePrefix;
 
-        /**
-         * C'tor.
-         * @param exitCode Exit code.
-         * @param messagePrefix Message prefix.
-         */
-        private Status(int exitCode, String messagePrefix) {
+        private Status(int exitCode) {
             this.exitCode = exitCode;
-            this.messagePrefix = messagePrefix;
         }
 
         public int getExitCode() {
             return exitCode;
         }
 
-        public String getMessagePrefix() {
-            return messagePrefix;
-        }
     }
 
     /**
@@ -284,7 +256,6 @@ public class JmxHealthCheck {
             out.println();
             exitCode = status.getExitCode();
         } else {
-            out.print(Status.CRITICAL.getMessagePrefix());
             out.println("Value not set. JMX query returned null value.");
             exitCode = Status.CRITICAL.getExitCode();
         }
@@ -317,7 +288,7 @@ public class JmxHealthCheck {
         try {
             exitCode = plugin.execute(props);
         } catch (Exception e) {
-            out.println(Status.UNKNOWN.getMessagePrefix() + e.getMessage());
+            out.println(e.getMessage());
             if (verbose != null)
                 e.printStackTrace(System.out);
             exitCode = Status.UNKNOWN.getExitCode();
