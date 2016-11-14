@@ -1,0 +1,11 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+version = '1.0'
+mainClassName = "com.epages.health.JmxHealthCheck"
+
+run {
+	args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi","-O","pdf-rendering:type=Endpoint,name=healthEndpoint","-o","getData"]
+}
+
