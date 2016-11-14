@@ -15,5 +15,5 @@ jar {
 }
 
 run {
-    args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi","-O","pdf-rendering:type=Endpoint,name=healthEndpoint","-o","getData"]
+    args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi","-O","org.springframework.boot:type=Endpoint,name=healthEndpoint","-o","getData"]
 }
