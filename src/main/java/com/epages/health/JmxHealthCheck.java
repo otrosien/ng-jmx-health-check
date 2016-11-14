@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.rmi.ConnectException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -72,9 +71,6 @@ public class JmxHealthCheck {
      */
     public static final String PROP_HELP = "help";
 
-    private HashMap<MBeanServerConnection, JMXConnector> connections =
-        new HashMap<MBeanServerConnection, JMXConnector>();
-
     /**
      * Open a connection to a MBean server.
      * @param serviceUrl Service URL,
@@ -84,38 +80,19 @@ public class JmxHealthCheck {
      * @return MBeanServerConnection if succesfull.
      * @throws IOException XX
      */
-    public MBeanServerConnection openConnection(
+    public JMXConnector openConnection(
             JMXServiceURL serviceUrl, String username, String password)
     throws IOException
     {
-        JMXConnector connector;
         HashMap<String, Object> environment = new HashMap<>();
         // Add environment variable to check for dead connections.
-        environment.put("jmx.remote.x.client.connection.check.period", 5000);
         if (username != null && password != null) {
-            environment = new HashMap<>();
             environment.put(JMXConnector.CREDENTIALS,
                     new String[] {username, password});
-            connector = JMXConnectorFactory.connect(serviceUrl, environment);
         } else {
-            connector = JMXConnectorFactory.connect(serviceUrl, environment);
+            environment.put("jmx.remote.x.client.connection.check.period", 5000);
         }
-        MBeanServerConnection connection = connector.getMBeanServerConnection();
-        connections.put(connection, connector);
-        return connection;
-    }
-
-    /**
-     * Close JMX connection.
-     * @param connection Connection.
-     * @throws IOException XX.
-     */
-    public void closeConnection(MBeanServerConnection connection)
-    throws IOException
-    {
-        JMXConnector connector = connections.remove(connection);
-        if (connector != null)
-            connector.close();
+        return JMXConnectorFactory.connect(serviceUrl, environment);
     }
 
     /**
@@ -130,7 +107,7 @@ public class JmxHealthCheck {
      */
     public ObjectName getObjectName(MBeanServerConnection connection,
             String objectName)
-    throws InstanceNotFoundException, MalformedObjectNameException, IOException
+    throws Exception
     {
         ObjectName objName = new ObjectName(objectName);
         if (objName.isPropertyPattern() || objName.isDomainPattern()) {
@@ -163,8 +140,7 @@ public class JmxHealthCheck {
      */
     public Object invoke(MBeanServerConnection connection, String objectName,
             String operationName)
-    throws InstanceNotFoundException, IOException,
-            MalformedObjectNameException, MBeanException, ReflectionException
+    throws Exception
     {
         ObjectName objName = getObjectName(connection, objectName);
         return connection.invoke(objName, operationName, null, null);
@@ -177,7 +153,7 @@ public class JmxHealthCheck {
      * @throws JsonProcessingException 
      * @throws NagiosJmxPluginException XX
      */
-    public int execute(Properties args) {
+    public int execute(Properties args) throws Exception {
         String username = args.getProperty(PROP_USERNAME);
         String password = args.getProperty(PROP_PASSWORD);
         String objectName = args.getProperty(PROP_OBJECT_NAME);
@@ -195,84 +171,37 @@ public class JmxHealthCheck {
         if (objectName == null || operation == null || serviceUrl == null)
         {
             showUsage();
-            return Status.CRITICAL.getExitCode();
+            return Status.UNKNOWN.getExitCode();
         }
 
-        JMXServiceURL url = null;
-        try {
-            url = new JMXServiceURL(serviceUrl);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Malformed service URL [" +
-                    serviceUrl + "]", e);
-        }
-        // Connect to MBean server.
-        MBeanServerConnection connection = null;
-        Object value = null;
-        try {
-            try {
-                connection = openConnection(url, username, password);
-            } catch (ConnectException ce) {
-                throw new IllegalArgumentException(
-                        "Error opening RMI connection: " + ce.getMessage(), ce);
-            } catch (Exception e) {
-                throw new IllegalArgumentException(
-                        "Error opening connection: " + e.getMessage(), e);
-            }
-            // Invoke operation if defined.
-            if (operation != null) {
-                try {
-                    value = invoke(connection, objectName, operation);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(
-                            "Error invoking operation [" + operation + "]: " +
-                            e.getMessage(), e);
+        JMXServiceURL url = new JMXServiceURL(serviceUrl);
+        try(JMXConnector connector = openConnection(url, username, password)) {
+            MBeanServerConnection connection = connector.getMBeanServerConnection();
+            Object value = invoke(connection, objectName, operation);
+            if (value != null) {
+                Status status = Status.OK;
+
+                if (value instanceof Map) {
+                    Map<?,?> mapValue = (Map<?,?>)value;
+                    if (mapValue.containsKey("status")) {
+                        status = "UP".equals(mapValue.get("status")) ? Status.OK : Status.CRITICAL;
+                    }
+                    value = mapValue.entrySet() //
+                            .stream() //
+                            .map(entry -> entry.getKey() + "=" + entry.getValue()) //
+                            .collect(Collectors.joining(", "));
+                } else if (value instanceof List) {
+                    value = ((List<?>) value).stream().map(String::valueOf).collect(Collectors.joining(", "));
+                } else {
+                    value = String.valueOf(value);
                 }
-            }
-        } finally {
-            if (connection != null) {
-                try {
-                    closeConnection(connection);
-                } catch (Exception e) {
-                    throw new RuntimeException(
-                            "Error closing JMX connection", e);
-                }
-            }
-        }
-        int exitCode;
-        if (value != null) {
-            Status status;
-            if (value instanceof Number || value instanceof String) {
-                status = Status.OK;
-            } else if (value instanceof Map) {
-                status = "UP".equals(((Map<?,?>)value).get("status")) ? Status.OK : Status.CRITICAL;
-                value = ((Map<?,?>)value).entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining(", "));
+                out.println(value);
+                return status.getExitCode();
             } else {
-                throw new IllegalArgumentException(
-                        "Type of return value not supported [" +
-                        value.getClass().getName() + "]. Must be either a " +
-                        "Number or String object.");
+                out.println("Value not set. JMX query returned null value.");
+                return Status.CRITICAL.getExitCode();
             }
-            outputStatus(out, value);
-            out.println();
-            exitCode = status.getExitCode();
-        } else {
-            out.println("Value not set. JMX query returned null value.");
-            exitCode = Status.CRITICAL.getExitCode();
         }
-        return exitCode;
-    }
-
-    /**
-     * Output status.
-     * @param out Print stream.
-     * @param status Status.
-     * @param objectName Object name.
-     * @param value Value
-     * @param unit Unit.
-     */
-    private void outputStatus(PrintStream out, Object value)
-    {
-        out.print(value);
     }
 
     /**
@@ -284,13 +213,11 @@ public class JmxHealthCheck {
         JmxHealthCheck plugin = new JmxHealthCheck();
         int exitCode;
         Properties props = parseArguments(args);
-        String verbose = props.getProperty(PROP_VERBOSE);
         try {
             exitCode = plugin.execute(props);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             out.println(e.getMessage());
-            if (verbose != null)
-                e.printStackTrace(System.out);
+            e.printStackTrace(System.err);
             exitCode = Status.UNKNOWN.getExitCode();
         }
         System.exit(exitCode);
