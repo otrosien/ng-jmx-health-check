@@ -1,4 +1,4 @@
-Usage: check_jmx -U <service_url> -O <object_name> 
+Usage: jmx_spring_health -U <service_url> -O <object_name> 
   -o <operation_name> [--username <username>] [--password <password>] [-h]
 
 
