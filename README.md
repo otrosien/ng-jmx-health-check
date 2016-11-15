@@ -12,3 +12,7 @@ Example usage:
 java -Xmx20m -Xms20m -XX:+UseParallelGC -jar build/libs/jmx_spring_health-1.0.jar -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
 ```
 
+## Acknowledgements
+
+* Code derived from nagios JMX plugin. See https://sourceforge.net/projects/nagioscheckjmx/
+
