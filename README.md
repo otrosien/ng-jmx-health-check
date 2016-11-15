@@ -48,6 +48,8 @@ Then, access the jmx port (9010 in the example below) from this command-line cli
 jmx_spring_health -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
 ```
 
+Result:
+
 ```
 status=DOWN, diskSpace={status=UP, total=190163431424, free=16598224896, threshold=10485760}, rabbit={status=DOWN, error=org.springframework.amqp.AmqpConnectException: java.net.ConnectException: Connection refused}, refreshScope={status=UP}, configServer={status=UNKNOWN, error=no property sources located}
 ```
