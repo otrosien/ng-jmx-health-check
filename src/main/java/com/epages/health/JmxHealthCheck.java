@@ -26,7 +26,7 @@ import javax.management.remote.JMXServiceURL;
 public class JmxHealthCheck {
 
     enum Status {
-        OK(0), CRITICAL(2), UNKNOWN(3);
+        OK(0), CRITICAL(1), UNKNOWN(2);
 
         private int exitCode;
 
