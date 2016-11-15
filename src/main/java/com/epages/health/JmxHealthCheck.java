@@ -227,7 +227,7 @@ public class JmxHealthCheck {
         } catch (Throwable e) {
             out.println(e.getMessage());
             e.printStackTrace(System.err);
-            exitCode = Status.UNKNOWN.getExitCode();
+            exitCode = Status.CRITICAL.getExitCode();
         }
         System.exit(exitCode);
     }
