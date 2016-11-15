@@ -1,9 +1,5 @@
 # JMX command-line client to access the Spring Boot health endpoint
 
-First, start your spring boot process with JMX remote agent enabled.
-See http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html
-
-Then, access the jmx port (9010 in the example below) from this command-line client.
 
 ## Building
 
@@ -43,7 +39,10 @@ Options are:
 
 ## Example execution
 
-You can use the result printed out on STDOUT, but for health checking it is more advisable to use the process exit code. Here is an example:
+First, start your spring boot process with JMX remote agent enabled.
+See http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html
+
+Then, access the jmx port (9010 in the example below) from this command-line client. You can use the result printed out on STDOUT, but for health checking it is more advisable to use the process exit code. Here is an example:
 
 ```
 jmx_spring_health -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
