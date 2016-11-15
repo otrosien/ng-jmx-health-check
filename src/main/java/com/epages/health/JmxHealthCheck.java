@@ -61,10 +61,6 @@ public class JmxHealthCheck {
      */
     public static final String PROP_OPERATION = "operation";
     /**
-     * Verbose output.
-     */
-    public static final String PROP_VERBOSE = "verbose";
-    /**
      * Help output.
      */
     public static final String PROP_HELP = "help";
@@ -295,8 +291,6 @@ public class JmxHealthCheck {
                 props.put(PROP_SERVICE_URL, args[++i]);
             else if ("-O".equals(args[i]))
                 props.put(PROP_OBJECT_NAME, args[++i]);
-            else if ("-A".equals(args[i]))
-                props.put(PROP_VERBOSE, "true");
             else if ("--username".equals(args[i]))
                 props.put(PROP_USERNAME, args[++i]);
             else if ("--password".equals(args[i]))
