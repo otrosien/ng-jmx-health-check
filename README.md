@@ -7,7 +7,6 @@
 ./gradlew distZip
 ```
 
-
 ## Usage
 
 ```
@@ -42,10 +41,16 @@ Options are:
 First, start your spring boot process with JMX remote agent enabled.
 See http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html
 
-Then, access the jmx port (9010 in the example below) from this command-line client. You can use the result printed out on STDOUT, but for health checking it is more advisable to use the process exit code. Here is an example:
+Spring Boot by default exposes its actuator endpoint for health checks on the 
+JMX object org.springframework.boot with type=Endpoint and name=healthEndpoint.
+The JMX domain can be changed by setting the `spring.jmx.default-domain` property.
+
+Then, access the jmx port (9010 in the example below) from this command-line client. 
+You can use the result printed out on STDOUT, but for health checking it is more 
+advisable to use the process exit code. Here is an example:
 
 ```
-jmx_spring_health -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
+jmx-spring-health -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
 ```
 
 Result:
