@@ -6,8 +6,8 @@ project.with {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     version = '1.0'
-    mainClassName = "com.epages.health.JmxHealthCheck"
-    group = 'com.epages'
+    mainClassName = "com.epages.commandline.health.JmxHealthCheck"
+    group = 'com.epages.commandline'
 }
 
 jar {

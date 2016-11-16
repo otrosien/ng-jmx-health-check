@@ -1,4 +1,4 @@
-package com.epages.health;
+package com.epages.commandline.health;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
