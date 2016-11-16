@@ -102,8 +102,6 @@ public class JmxHealthCheck {
      *             If object not found.
      * @throws MalformedObjectNameException
      *             If object name is malformed.
-     * @throws NagiosJmxPluginException
-     *             If object name is not unqiue.
      * @throws IOException
      *             In case of a communication error.
      */
@@ -143,8 +141,6 @@ public class JmxHealthCheck {
      *             XX
      * @throws ReflectionException
      *             XX
-     * @throws NagiosJmxPluginException
-     *             XX
      */
     public Object invoke(MBeanServerConnection connection, String objectName, String operationName) throws Exception {
         ObjectName objName = getObjectName(connection, objectName);
@@ -156,10 +152,8 @@ public class JmxHealthCheck {
      * 
      * @param args
      *            Arguments as properties.
-     * @return Nagios exit code.
+     * @return Exit code.
      * @throws JsonProcessingException
-     * @throws NagiosJmxPluginException
-     *             XX
      */
     public int execute(Properties args) throws Exception {
         String username = args.getProperty(PROP_USERNAME);
@@ -235,8 +229,6 @@ public class JmxHealthCheck {
     /**
      * Show usage.
      * 
-     * @throws NagiosJmxPluginException
-     *             XX
      */
     private void showUsage() {
         outputResource(getClass().getResource("usage.txt"));
@@ -245,8 +237,6 @@ public class JmxHealthCheck {
     /**
      * Show help.
      * 
-     * @throws NagiosJmxPluginException
-     *             XX
      */
     private void showHelp() {
         outputResource(getClass().getResource("help.txt"));
@@ -257,8 +247,6 @@ public class JmxHealthCheck {
      * 
      * @param url
      *            Resource URL.
-     * @throws NagiosJmxPluginException
-     *             XX
      */
     private void outputResource(URL url) {
         PrintStream out = System.out;
