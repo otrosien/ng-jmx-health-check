@@ -42,7 +42,7 @@ First, start your spring boot process with JMX remote agent enabled.
 See http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html
 
 Spring Boot by default exposes its actuator endpoint for health checks on the 
-JMX object org.springframework.boot with type=Endpoint and name=healthEndpoint.
+JMX object `org.springframework.boot` with `type=Endpoint` and `name=healthEndpoint`.
 The JMX domain can be changed by setting the `spring.jmx.default-domain` property.
 
 Then, access the jmx port (9010 in the example below) from this command-line client. 
