@@ -1,21 +1,34 @@
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.8
-version = '1.0'
-mainClassName = "com.epages.health.JmxHealthCheck"
+project.with {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    version = '1.0'
+    mainClassName = "com.epages.health.JmxHealthCheck"
+    group = 'com.epages'
+}
 
 jar {
     manifest {
         attributes(
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-                'Main-Class': project.mainClassName
-                )
+            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Main-Class': project.mainClassName
+        )
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
     }
 }
 
 applicationDefaultJvmArgs = ['-Xmx20m', '-Xms20m', '-XX:+UseParallelGC']
 
 run {
-    args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi","-O","org.springframework.boot:type=Endpoint,name=healthEndpoint","-o","getData"]
+    args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:${System.env.JMX_PORT}/jmxrmi","-O","org.springframework.boot:type=Endpoint,name=healthEndpoint","-o","getData"]
 }
