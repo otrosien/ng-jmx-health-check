@@ -17,7 +17,6 @@ scmVersion {
     }
 }
 
-
 project.with {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
