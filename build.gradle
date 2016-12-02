@@ -30,27 +30,15 @@ project.with {
     version = scmVersion.version
 }
 
-// running from gradle.
-run {
-    args = [
-        "-U",
-        "service:jmx:rmi:///jndi/rmi://localhost:${System.env.JMX_PORT}/jmxrmi",
-        "-O",
-        "org.springframework.boot:type=Endpoint,name=healthEndpoint",
-        "-o",
-        "getData"
-    ]
-}
-
 // packaging.
 task sourceJar(type: Jar) { from sourceSets.main.allJava }
 
 jar {
     manifest {
         attributes(
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-                'Main-Class': project.mainClassName
-                )
+            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Main-Class': project.mainClassName
+        )
     }
 }
 

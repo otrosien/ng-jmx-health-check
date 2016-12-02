@@ -10,7 +10,7 @@
 ## Usage
 
 ```
-Usage: jmx_spring_health -U <service_url> -O <object_name> 
+Usage: jmx-health-check -U <service_url> -O <object_name> 
   -o <operation_name> [--username <username>] [--password <password>] [-h]
 
 
@@ -20,14 +20,13 @@ Options are:
     Help page, this page.
 	
 -U 
-    JMX URL; for example: "service:jmx:rmi://<host>:<port>/jndi/rmi://<host>:<port>/jmxrmi"
+    JMX URL; default: "service:jmx:rmi://localhost:1234/jmxrmi"
 	
 -O 
-    Object name to be checked, for example, "java.lang:type=Memory"
+    Object name to be checked, for default: "org.springframework.boot:type=Endpoint,name=healthEndpoint"
     
 -o
-    Operation to invoke on MBean after querying value. Useful to
-    reset any statistics or counter.
+    Operation to invoke on MBean after querying value, default: "getData"
 
 --username
     Username, if JMX access is restricted; for example "monitorRole"
@@ -45,7 +44,7 @@ Spring Boot by default exposes its actuator endpoint for health checks on the
 JMX object `org.springframework.boot` with `type=Endpoint` and `name=healthEndpoint`.
 The JMX domain can be changed by setting the `spring.jmx.default-domain` property.
 
-Then, access the jmx port (9010 in the example below) from this command-line client. 
+Then, access the jmx port (1234 in the example below) from this command-line client. 
 You can use the result printed out on STDOUT, but for health checking it is more 
 advisable to use the process exit code. Here is an example:
 

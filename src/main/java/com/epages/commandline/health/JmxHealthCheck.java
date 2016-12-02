@@ -158,9 +158,9 @@ public class JmxHealthCheck {
     public int execute(Properties args) throws Exception {
         String username = args.getProperty(PROP_USERNAME);
         String password = args.getProperty(PROP_PASSWORD);
-        String objectName = args.getProperty(PROP_OBJECT_NAME);
-        String serviceUrl = args.getProperty(PROP_SERVICE_URL);
-        String operation = args.getProperty(PROP_OPERATION);
+        String objectName = args.getProperty(PROP_OBJECT_NAME, "org.springframework.boot:type=Endpoint,name=healthEndpoint");
+        String serviceUrl = args.getProperty(PROP_SERVICE_URL, "service:jmx:rmi:///jndi/rmi://localhost:1234/jmxrmi");
+        String operation = args.getProperty(PROP_OPERATION, "getData");
         String help = args.getProperty(PROP_HELP);
 
         PrintStream out = System.out;
