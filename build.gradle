@@ -1,34 +1,72 @@
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'maven-publish'
+plugins {
+    id "com.jfrog.artifactory" version "4.4.9"
+    id "application"
+    id "maven"
+    id "maven-publish"
+}
 
+// settings.
 project.with {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     version = '1.0'
     mainClassName = "com.epages.commandline.health.JmxHealthCheck"
     group = 'com.epages.commandline'
+    applicationDefaultJvmArgs = [
+        '-Xmx20m',
+        '-Xms20m',
+        '-XX:+UseParallelGC'
+    ]
 }
+
+// running from gradle.
+run {
+    args = [
+        "-U",
+        "service:jmx:rmi:///jndi/rmi://localhost:${System.env.JMX_PORT}/jmxrmi",
+        "-O",
+        "org.springframework.boot:type=Endpoint,name=healthEndpoint",
+        "-o",
+        "getData"
+    ]
+}
+
+// packaging.
+task sourceJar(type: Jar) { from sourceSets.main.allJava }
 
 jar {
     manifest {
         attributes(
-            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-            'Main-Class': project.mainClassName
-        )
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': project.mainClassName
+                )
     }
 }
 
+// publishing
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifact sourceJar { classifier "sources" }
         }
     }
 }
 
-applicationDefaultJvmArgs = ['-Xmx20m', '-Xms20m', '-XX:+UseParallelGC']
-
-run {
-    args = ["-U","service:jmx:rmi:///jndi/rmi://localhost:${System.env.JMX_PORT}/jmxrmi","-O","org.springframework.boot:type=Endpoint,name=healthEndpoint","-o","getData"]
+artifactory {
+    contextUrl = System.env.ARTIFACTORY_URL
+    publish {
+        repository {
+            repoKey = System.env.ARTIFACTORY_RELEASE_REPOSITORY
+            username = System.env.ARTIFACTORY_DEPLOYER_USERNAME
+            password = System.env.ARTIFACTORY_DEPLOYER_PASSWORD
+        }
+        defaults { 
+            publishBuildInfo = true
+            publishArtifacts = true
+            publishPom = true
+            publishIvy = false
+            publications ('mavenJava')
+        }
+    }
 }
