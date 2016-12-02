@@ -50,7 +50,7 @@ You can use the result printed out on STDOUT, but for health checking it is more
 advisable to use the process exit code. Here is an example:
 
 ```
-jmx-spring-health -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
+jmx-health-check -U service:jmx:rmi:///jndi/rmi://localhost:9010/jmxrmi -O org.springframework.boot:type=Endpoint,name=healthEndpoint -o getData
 ```
 
 Result:
