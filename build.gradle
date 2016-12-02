@@ -7,6 +7,17 @@ plugins {
 }
 
 // settings.
+
+scmVersion {
+    tag {
+        prefix = ''
+    }
+  hooks {
+        pre 'commit'
+    }
+}
+
+
 project.with {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
