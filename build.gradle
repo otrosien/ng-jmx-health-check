@@ -78,6 +78,7 @@ artifactory {
         }
     }
 }
+publish.dependsOn(artifactoryPublish)
 
 sonarqube.properties {
     property "sonar.host.url", "http://sonar.epages.works:9000/"
