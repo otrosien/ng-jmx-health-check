@@ -7,6 +7,14 @@ plugins {
     id "org.sonarqube" version "2.2.1"
 }
 
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
 // settings.
 
 scmVersion {
