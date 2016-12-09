@@ -4,6 +4,7 @@ plugins {
     id "application"
     id "maven"
     id "maven-publish"
+    id "org.sonarqube" version "2.2.1"
 }
 
 // settings.
@@ -68,4 +69,10 @@ artifactory {
             publications ('mavenJava')
         }
     }
+}
+
+sonarqube.properties {
+    property "sonar.host.url", "http://sonar.epages.works:9000/"
+    property "sonar.scm.provider", "git"
+    property "sonar.sourceEncoding", "UTF-8"
 }
